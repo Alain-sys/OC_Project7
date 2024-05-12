@@ -1,6 +1,16 @@
+require('dotenv').config();
 const express = require('express');
-
 const app = express();
+const mongoose = require('mongoose');
+const path = require('path');
+
+const bookRoutes = require('./routes/book');
+const userRoutes = require('./routes/user');
+
+mongoose
+  .connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
 
@@ -11,47 +21,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/books', (req, res, next) => {
-  console.log(req.body);
-  res.status(201).json({message: 'Objet créé !'})
-  next();
-})
-
-app.get('/api/books', (req, res, next) => {
-  const books = [
-    {
-      userId: 'qsomihvqios',
-      title: 'Mon premier objet',
-      author: 'Gérard Dupont',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      year: 2010,
-      genre: 'fantasy',
-      ratings: [
-        {
-          userId: 'qsomihvqios',
-          grade: 4
-        }
-      ],
-      averageRating: 2,
-    },
-    {
-      _id: 'qsomihvqios',
-      userId: 'qsomihvqios',
-      title: 'Mon deuxième objet',
-      author: 'Jeanne Dupont',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      year: 2011,
-      genre: 'fantastique',
-      ratings: [
-        {
-          userId: 'qsomihvqios',
-          grade: 5
-        }
-      ],
-      averageRating: 3,
-    },
-  ];
-  res.status(200).json(books);
-});
+app.use('/api/books', bookRoutes);
+app.use('/api/auth', userRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;
