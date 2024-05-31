@@ -72,3 +72,42 @@ exports.deleteBook = (req, res, next) => {
     })
     .catch((error) => res.status(401).json({ error }));
 };
+
+
+exports.getBestRatingBooks = (req, res, next) => {
+  Book.find()
+    .sort({ averageRating: -1 })
+    .limit(3)
+    .then((books) => {
+      res.status(200).json(books);
+    })
+    .catch((error) => {
+      res.status(400).json({ error });
+    });
+};
+
+
+exports.rateBook = (req, res, next) => {
+  console.log(req, "req")
+  const updateRating = {
+    userId: req.auth.userId,
+    grade: req.body.rating
+  }
+
+  if (updateRating.grade < 0 || updateRating.grade > 5) {
+    return res.status(400).json({ error: 'Rating must be between 0 and 5.' });
+  }
+
+    Book.findOne({ _id: req.params.id })
+        .then((book) => {
+            if (book.ratings.find(ratings => ratings.userId === req.auth.userId)) {
+                return res.status(400).json({ message: 'User already rated for this book' });
+            } else {
+                book.ratings.push(updateRating);
+                book.averageRating = (book.averageRating * (book.ratings.length - 1) + updateRating.grade) / book.ratings.length;
+                return book.save();
+            }
+        })
+        .then((updateBook) => res.status(201).json(updateBook))
+        .catch(error => res.status(400).json({ error }));
+};
