@@ -88,7 +88,6 @@ exports.getBestRatingBooks = (req, res, next) => {
 
 
 exports.rateBook = (req, res, next) => {
-  console.log(req, "req")
   const updateRating = {
     userId: req.auth.userId,
     grade: req.body.rating
