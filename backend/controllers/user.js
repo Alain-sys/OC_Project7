@@ -3,6 +3,17 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 exports.signup = (req, res, next) => {
+  const { email, password } = req.body;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Invalid email address' });
+  }
+
+  if (password.length < 4) {
+    return res.status(400).json({ message: 'Password must be at least 4 characters long' });
+  }
+
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
@@ -12,7 +23,7 @@ exports.signup = (req, res, next) => {
       });
       user
         .save()
-        .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+        .then(() => res.status(201).json({ message: 'User created !' }))
         .catch((error) => res.status(400).json({ error }));
     })
     .catch((error) => res.status(500).json({ error }));
@@ -22,13 +33,13 @@ exports.login = (req, res, next) => {
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (!user) {
-        return res.status(401).json({ message: 'Paire login/mot de passe incorrecte' });
+        return res.status(401).json({ message: 'Incorrect login/password pair' });
       }
       bcrypt
         .compare(req.body.password, user.password)
         .then((valid) => {
           if (!valid) {
-            return res.status(401).json({ message: 'Paire login/mot de passe incorrecte' });
+            return res.status(401).json({ message: 'Incorrect login/password pair' });
           }
           res.status(200).json({
             userId: user._id,
