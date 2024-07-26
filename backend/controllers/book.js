@@ -67,8 +67,12 @@ exports.modifyBook = (req, res, next) => {
       : { ...req.body };
 
     delete bookObject.user_Id;
-    delete bookObject.averageRating;
-    delete bookObject.ratings;
+    if (bookObject.ratings) {
+      delete bookObject.ratings;
+    }
+    if(bookObject.averageRating){
+      delete bookObject.averageRating;
+    };
         
     validateUpdatedBook(bookObject); 
 
